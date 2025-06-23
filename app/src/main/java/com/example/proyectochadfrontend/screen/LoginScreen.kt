@@ -1,22 +1,29 @@
 package com.example.proyectochadfrontend.screen
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.data.LoginRequest
 import com.example.proyectochadfrontend.data.LoginResponse
 import com.example.proyectochadfrontend.data.RetrofitClient
+import com.example.proyectochadfrontend.util.UserPreferences
 import kotlinx.coroutines.*
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: (LoginResponse) -> Unit
 ) {
+    val context = LocalContext.current
+    val userPreferences = remember { UserPreferences(context) }
+    val scope = rememberCoroutineScope()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMsg by remember { mutableStateOf<String?>(null) }
@@ -57,32 +64,36 @@ fun LoginScreen(
             onClick = {
                 isLoading = true
                 errorMsg = null
-                CoroutineScope(Dispatchers.IO).launch {
+
+                scope.launch {
                     try {
-                        val api = RetrofitClient.getClient("") // aún no tienes token al hacer login
+                        val api = RetrofitClient.getClient("")
                         val response = api.login(LoginRequest(correo = email, contrasena = password))
 
-                        withContext(Dispatchers.Main) {
-                            isLoading = false
-                            if (response.isSuccessful) {
-                                val body = response.body()
-                                if (body != null) {
-                                    onLoginSuccess(body)
-                                } else {
-                                    errorMsg = "Respuesta vacía del servidor"
-                                }
+                        if (response.isSuccessful) {
+                            val body = response.body()
+                            if (body != null) {
+                                // Guardar datos del usuario en DataStore
+                                userPreferences.saveUserData(
+                                    token = body.token,
+                                    rol = body.rol,
+                                    correo = body.correo,
+                                    idUsuario = body.idUsuario
+                                )
+                                onLoginSuccess(body)
                             } else {
-                                errorMsg = "Credenciales incorrectas"
+                                errorMsg = "Respuesta vacía del servidor"
                             }
+                        } else {
+                            errorMsg = "Credenciales incorrectas"
                         }
+
                     } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            isLoading = false
-                            errorMsg = "Error de conexión: ${e.message}"
-                        }
+                        errorMsg = "Error de conexión: ${e.message}"
+                    } finally {
+                        isLoading = false
                     }
                 }
-
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading

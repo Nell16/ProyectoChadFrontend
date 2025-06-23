@@ -12,7 +12,11 @@ import com.example.proyectochadfrontend.data.LoginResponse
 fun MenuPrincipalScreen(
     user: LoginResponse,
     onLogout: () -> Unit,
-    onNavigateToReparaciones: () -> Unit
+    onNavigateToReparaciones: () -> Unit,
+    onCrearReparacion: () -> Unit,
+    onDiagnosticar: () -> Unit,
+    onAsignarTecnico: () -> Unit,
+    onSolicitudesDisponibles: () -> Unit // ✅ Agregado aquí
 ) {
     Column(
         modifier = Modifier
@@ -33,20 +37,62 @@ fun MenuPrincipalScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
-                onClick = onNavigateToReparaciones,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Mis Reparaciones")
-            }
+            when (user.rol.uppercase()) {
+                "CLIENTE" -> {
+                    Button(
+                        onClick = onNavigateToReparaciones,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Mis Reparaciones")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onCrearReparacion,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Solicitud - Nueva Reparación")
+                    }
+                }
 
-            // Futuro: Botón para crear nueva reparación
-            // Button(
-            //     onClick = { onNavigateToCrearReparacion() },
-            //     modifier = Modifier.fillMaxWidth()
-            // ) {
-            //     Text("Crear Solicitud de Reparación")
-            // }
+                "TECNICO" -> {
+                    Button(
+                        onClick = onNavigateToReparaciones,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Reparaciones Asignadas")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onSolicitudesDisponibles, // ✅ Botón agregado aquí
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Solicitudes Disponibles")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onDiagnosticar,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Diagnosticar Reparación")
+                    }
+                }
+
+                "ADMIN" -> {
+                    Button(
+                        onClick = onNavigateToReparaciones,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Todas las Reparaciones")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onAsignarTecnico,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Asignar Técnico")
+                    }
+                }
+            }
         }
 
         Button(

@@ -5,13 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.*
 import com.example.proyectochadfrontend.data.LoginResponse
-import com.example.proyectochadfrontend.screen.LoginScreen
-import com.example.proyectochadfrontend.screen.MenuPrincipalScreen
-import com.example.proyectochadfrontend.screen.MisReparacionesScreen
+import com.example.proyectochadfrontend.screen.*
+import com.example.proyectochadfrontend.ui.theme.ProyectoChadFrontendTheme
 import com.example.proyectochadfrontend.util.UserPreferences
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -19,48 +17,106 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            var usuarioLogueado by remember { mutableStateOf<LoginResponse?>(null) }
-            var pantallaActual by remember { mutableStateOf("menu") }
+            ProyectoChadFrontendTheme {
+                val navController = rememberNavController()
+                var usuarioLogueado by remember { mutableStateOf<LoginResponse?>(null) }
+                val context = LocalContext.current
+                val userPrefs = remember { UserPreferences(context) }
+                val scope = rememberCoroutineScope()
 
-            val context = LocalContext.current
-            val userPrefs = remember { UserPreferences(context) }
+                NavHost(navController = navController, startDestination = "login") {
 
-            when {
-                usuarioLogueado == null -> {
-                    LoginScreen { loginResponse ->
-                        // Guardamos en DataStore
-                        CoroutineScope(Dispatchers.IO).launch {
-                            userPrefs.saveUserData(
-                                token = loginResponse.token,
-                                rol = loginResponse.rol,
-                                correo = loginResponse.correo,
-                                idUsuario = loginResponse.idUsuario
+                    composable("login") {
+                        LoginScreen { loginResponse ->
+                            usuarioLogueado = loginResponse
+                            scope.launch {
+                                userPrefs.saveUserData(
+                                    token = loginResponse.token,
+                                    rol = loginResponse.rol,
+                                    correo = loginResponse.correo,
+                                    idUsuario = loginResponse.idUsuario
+                                )
+                            }
+                            navController.navigate("menu") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        }
+                    }
+
+                    composable("menu") {
+                        usuarioLogueado?.let { user ->
+                            MenuPrincipalScreen(
+                                user = user,
+                                onLogout = {
+                                    scope.launch { userPrefs.clear() }
+                                    usuarioLogueado = null
+                                    navController.navigate("login") {
+                                        popUpTo("menu") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToReparaciones = {
+                                    navController.navigate("reparaciones")
+                                },
+                                onCrearReparacion = {
+                                    navController.navigate("crearReparacion")
+                                },
+                                onDiagnosticar = {
+                                    navController.navigate("reparaciones") // puedes ajustar si hay pantalla específica
+                                },
+                                onAsignarTecnico = {
+                                    navController.navigate("asignarTecnico")
+                                },
+                                onSolicitudesDisponibles = {
+                                    navController.navigate("solicitudesDisponibles")
+                                }
                             )
                         }
-                        usuarioLogueado = loginResponse
                     }
-                }
 
-                pantallaActual == "reparaciones" -> {
-                    MisReparacionesScreen(
-                        userId = usuarioLogueado!!.idUsuario,
-                        token = usuarioLogueado!!.token
-                    )
-                }
-
-                else -> {
-                    MenuPrincipalScreen(
-                        user = usuarioLogueado!!,
-                        onLogout = {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                userPrefs.clear()
-                            }
-                            usuarioLogueado = null
-                        },
-                        onNavigateToReparaciones = {
-                            pantallaActual = "reparaciones"
+                    composable("reparaciones") {
+                        usuarioLogueado?.let {
+                            MisReparacionesScreen(
+                                userId = it.idUsuario,
+                                token = it.token,
+                                onBack = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
-                    )
+                    }
+
+                    composable("crearReparacion") {
+                        usuarioLogueado?.let {
+                            CrearReparacionScreen(
+                                userId = it.idUsuario,
+                                token = it.token,
+                                onReparacionCreada = {
+                                    navController.popBackStack()
+                                },
+                                onBack = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+                    }
+
+                    composable("asignarTecnico") {
+                        usuarioLogueado?.let {
+                            AsignarTecnicoScreen(
+                                token = it.token,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable("solicitudesDisponibles") {
+                        usuarioLogueado?.let {
+                            SolicitudesDisponiblesScreen(
+                                token = it.token,
+                                onVolver = { navController.popBackStack() }
+                            )
+                        }
+                    }
                 }
             }
         }
