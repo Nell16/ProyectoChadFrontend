@@ -1,8 +1,8 @@
 package com.example.proyectochadfrontend.data
 
-data class ServicioDTO(
-    val id: Long,
+data class ServicioRequest(
     val nombre: String,
     val descripcion: String,
     val precioBase: Double
 )
+

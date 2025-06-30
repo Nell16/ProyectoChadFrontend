@@ -15,7 +15,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun SolicitudesDisponiblesScreen(
     token: String,
-    onVolver: () -> Unit
+    rol: String,
+    onVolver: () -> Unit,
+    onAsignarTecnico: (Long) -> Unit,
+    onVerDetalle: (Long) -> Unit
 ) {
     var solicitudes by remember { mutableStateOf<List<ReparacionResponse>>(emptyList()) }
     var mensaje by remember { mutableStateOf<String?>(null) }
@@ -37,48 +40,44 @@ fun SolicitudesDisponiblesScreen(
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text("Solicitudes Disponibles", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (mensaje != null) {
-            Text("Mensaje: $mensaje", color = MaterialTheme.colorScheme.error)
+        mensaje?.let {
+            Text("Mensaje: $it", color = MaterialTheme.colorScheme.error)
         }
 
         LazyColumn {
             items(solicitudes) { rep ->
-                Card(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Equipo: ${rep.tipoEquipo} - ${rep.marca} ${rep.modelo}")
                         Text("Problema: ${rep.descripcionFalla}")
                         Text("Estado: ${rep.estado}")
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = {
-                                scope.launch(Dispatchers.IO) {
-                                    try {
-                                        val autoResponse = api.autoasignarTecnico(rep.id)
-                                        if (autoResponse.isSuccessful) {
-                                            mensaje = "Reparación asignada correctamente"
-                                            solicitudes = solicitudes.filter { it.id != rep.id }
-                                        } else if (autoResponse.code() == 400) {
-                                            mensaje = "No puedes tomar más de 5 reparaciones activas"
-                                        } else {
-                                            mensaje = "Error al asignar reparación"
-                                        }
-                                    } catch (e: Exception) {
-                                        mensaje = "Error: ${e.message}"
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Tomar esta reparación")
+                        if (rol == "ADMIN") {
+                            Button(
+                                onClick = { onAsignarTecnico(rep.id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Asignar Técnico")
+                            }
+                        } else if (rol == "TECNICO") {
+                            Button(
+                                onClick = { onVerDetalle(rep.id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Ver Solicitud")
+                            }
                         }
                     }
                 }
@@ -86,11 +85,7 @@ fun SolicitudesDisponiblesScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = onVolver,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = onVolver, modifier = Modifier.fillMaxWidth()) {
             Text("Volver")
         }
     }

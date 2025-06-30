@@ -1,4 +1,3 @@
-// AsignarTecnicoScreen.kt
 package com.example.proyectochadfrontend.screen
 
 import androidx.compose.foundation.layout.*
@@ -8,89 +7,136 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.proyectochadfrontend.data.ReparacionResponse
 import com.example.proyectochadfrontend.data.RetrofitClient
 import com.example.proyectochadfrontend.data.UsuarioDTO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun AsignarTecnicoScreen(token: String, onBack: () -> Unit) {
+fun AsignarTecnicoScreen(
+    token: String,
+    reparacionId: Long,
+    onBack: () -> Unit
+) {
     val scope = rememberCoroutineScope()
-    var reparaciones by remember { mutableStateOf<List<ReparacionResponse>>(emptyList()) }
     var tecnicos by remember { mutableStateOf<List<UsuarioDTO>>(emptyList()) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var cargaReparaciones by remember { mutableStateOf<Map<Long, Int>>(emptyMap()) } // técnicoId -> cantidad activa
+    var mensaje by remember { mutableStateOf<String?>(null) }
+
+    val api = RetrofitClient.getClient(token)
 
     LaunchedEffect(Unit) {
         scope.launch(Dispatchers.IO) {
             try {
-                val api = RetrofitClient.getClient(token)
-                val reparacionesResp = api.getReparacionesSinTecnico()
-                val tecnicosResp = api.getTecnicos()
-                if (reparacionesResp.isSuccessful && tecnicosResp.isSuccessful) {
-                    reparaciones = reparacionesResp.body() ?: emptyList()
-                    tecnicos = tecnicosResp.body() ?: emptyList()
+                val response = api.getTecnicos()
+                if (response.isSuccessful) {
+                    val listaTecnicos = response.body() ?: emptyList()
+                    tecnicos = listaTecnicos
+
+                    // Consultar reparaciones activas por cada técnico
+                    val mapeo = mutableMapOf<Long, Int>()
+                    for (tecnico in listaTecnicos) {
+                        val reparacionesResp = api.getReparacionesPorTecnico(tecnico.id)
+                        if (reparacionesResp.isSuccessful) {
+                            val activas = reparacionesResp.body()?.filter {
+                                it.estado != "REPARADO" && it.estado != "ENTREGADO"
+                            } ?: emptyList()
+                            mapeo[tecnico.id] = activas.size
+                        } else {
+                            mapeo[tecnico.id] = -1 // error al cargar
+                        }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        cargaReparaciones = mapeo
+                    }
                 } else {
-                    error = "Error al cargar datos"
+                    withContext(Dispatchers.Main) {
+                        mensaje = "Error al cargar técnicos"
+                    }
                 }
             } catch (e: Exception) {
-                error = "Error: ${e.message}"
+                withContext(Dispatchers.Main) {
+                    mensaje = "Error de red: ${e.message}"
+                }
             }
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
+
         Text("Asignar Técnico", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (error != null) {
-            Text("$error", color = MaterialTheme.colorScheme.error)
+        if (mensaje != null) {
+            Text(mensaje!!, color = MaterialTheme.colorScheme.error)
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         LazyColumn {
-            items(reparaciones) { rep ->
-                Card(modifier = Modifier.padding(8.dp)) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        Text("${rep.tipoEquipo} - ${rep.marca} ${rep.modelo}")
-                        Text("Falla: ${rep.descripcionFalla}")
-                        DropdownMenuSample(rep.id, tecnicos, token)
+            items(tecnicos) { tecnico ->
+                val cantidad = cargaReparaciones[tecnico.id]
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Nombre: ${tecnico.nombre}")
+                        Text("Correo: ${tecnico.correo}")
+                        Text("Rol: ${tecnico.rol}")
+                        if (cantidad != null) {
+                            if (cantidad >= 0) {
+                                Text("Reparaciones activas: $cantidad")
+                                if (cantidad >= 5) {
+                                    Text(
+                                        text = "Este técnico ha alcanzado el limite!",
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            } else {
+                                Text("Error al obtener cantidad de reparaciones")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = {
+                                scope.launch(Dispatchers.IO) {
+                                    try {
+                                        val response = api.asignarTecnico(reparacionId, tecnico.id)
+                                        withContext(Dispatchers.Main) {
+                                            if (response.isSuccessful) {
+                                                mensaje = "Técnico asignado correctamente"
+                                            } else {
+                                                mensaje = "Error al asignar técnico"
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            mensaje = "Error: ${e.message}"
+                                        }
+                                    }
+                                }
+                            },
+                            enabled = cantidad != null && cantidad < 5, // 🔒 desactiva si >= 5
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Asignar a esta reparación")
+                        }
                     }
                 }
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
             Text("Volver")
-        }
-    }
-}
-
-@Composable
-fun DropdownMenuSample(reparacionId: Long, tecnicos: List<UsuarioDTO>, token: String) {
-    var expanded by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf<UsuarioDTO?>(null) }
-    val scope = rememberCoroutineScope()
-
-    Column {
-        OutlinedButton(onClick = { expanded = true }) {
-            Text(selected?.nombre ?: "Seleccionar Técnico")
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            tecnicos.forEach { tecnico ->
-                DropdownMenuItem(
-                    text = { Text(tecnico.nombre) },
-                    onClick = {
-                        selected = tecnico
-                        expanded = false
-                        scope.launch(Dispatchers.IO) {
-                            try {
-                                val api = RetrofitClient.getClient(token)
-                                api.asignarTecnico(reparacionId, tecnico.id)
-                            } catch (_: Exception) {}
-                        }
-                    }
-                )
-            }
         }
     }
 }

@@ -16,7 +16,11 @@ fun MenuPrincipalScreen(
     onCrearReparacion: () -> Unit,
     onDiagnosticar: () -> Unit,
     onAsignarTecnico: () -> Unit,
-    onSolicitudesDisponibles: () -> Unit // ✅ Agregado aquí
+    onSolicitudesDisponibles: () -> Unit,
+    onGestionServicios: () -> Unit = {},
+    //onGestionComponentes: () -> Unit = {},
+    //onGestionTecnicos: () -> Unit = {},
+    //onGestionReparaciones: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -39,40 +43,25 @@ fun MenuPrincipalScreen(
 
             when (user.rol.uppercase()) {
                 "CLIENTE" -> {
-                    Button(
-                        onClick = onNavigateToReparaciones,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Button(onClick = onNavigateToReparaciones, modifier = Modifier.fillMaxWidth()) {
                         Text("Mis Reparaciones")
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = onCrearReparacion,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Button(onClick = onCrearReparacion, modifier = Modifier.fillMaxWidth()) {
                         Text("Solicitud - Nueva Reparación")
                     }
                 }
 
                 "TECNICO" -> {
-                    Button(
-                        onClick = onNavigateToReparaciones,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Button(onClick = onNavigateToReparaciones, modifier = Modifier.fillMaxWidth()) {
                         Text("Reparaciones Asignadas")
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = onSolicitudesDisponibles, // ✅ Botón agregado aquí
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Button(onClick = onSolicitudesDisponibles, modifier = Modifier.fillMaxWidth()) {
                         Text("Solicitudes Disponibles")
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = onDiagnosticar,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Button(onClick = onDiagnosticar, modifier = Modifier.fillMaxWidth()) {
                         Text("Diagnosticar Reparación")
                     }
                 }
@@ -89,19 +78,23 @@ fun MenuPrincipalScreen(
                         onClick = onAsignarTecnico,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Asignar Técnico")
+                        Text("Solicitudes Disponibles")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onGestionServicios,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Gestionar Servicios")
                     }
                 }
             }
         }
 
-        Button(
-            onClick = onLogout,
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-        ) {
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(onClick = onLogout, modifier = Modifier.fillMaxWidth()) {
             Text("Cerrar Sesión")
         }
     }
 }
+

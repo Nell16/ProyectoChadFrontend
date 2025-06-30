@@ -44,7 +44,8 @@ fun LoginScreen(
             onValueChange = { email = it },
             label = { Text("Correo electrónico") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.colors()
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -55,7 +56,8 @@ fun LoginScreen(
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.colors()
         )
 
         Spacer(modifier = Modifier.height(20.dp))

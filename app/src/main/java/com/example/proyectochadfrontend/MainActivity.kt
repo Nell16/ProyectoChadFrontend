@@ -61,14 +61,18 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("crearReparacion")
                                 },
                                 onDiagnosticar = {
-                                    navController.navigate("reparaciones") // puedes ajustar si hay pantalla específica
+                                    navController.navigate("reparaciones")
                                 },
                                 onAsignarTecnico = {
-                                    navController.navigate("asignarTecnico")
+                                    navController.navigate("solicitudesDisponibles")
                                 },
                                 onSolicitudesDisponibles = {
                                     navController.navigate("solicitudesDisponibles")
+                                },
+                                onGestionServicios = {
+                                    navController.navigate("gestionServicios")
                                 }
+
                             )
                         }
                     }
@@ -78,10 +82,66 @@ class MainActivity : ComponentActivity() {
                             MisReparacionesScreen(
                                 userId = it.idUsuario,
                                 token = it.token,
-                                onBack = {
+                                rol = it.rol,
+                                onBack = { navController.popBackStack() },
+                                onVerDetalle = { reparacionId ->
+                                    navController.navigate("detalleReparacionCliente/$reparacionId")
+                                },
+                                onAccionesReparacion = { reparacionId ->
+                                    navController.navigate("accionesReparacion/$reparacionId")
+                                }
+                            )
+                        }
+                    }
+
+                    composable("detalleReparacionCliente/{id}") { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                        val token = usuarioLogueado?.token ?: ""
+                        if (id != null) {
+                            DetalleReparacionClienteScreen(
+                                reparacionId = id,
+                                token = token,
+                                onVolver = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable("detalleReparacionTecnico/{id}") { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                        val token = usuarioLogueado?.token ?: ""
+                        if (id != null) {
+                            DetalleReparacionTecnicoScreen(
+                                reparacionId = id,
+                                token = token,
+                                onVolver = { navController.popBackStack() },
+                                onTomarSolicitud = {
                                     navController.popBackStack()
                                 }
                             )
+                        } else {
+                            // Manejo de error si el ID no es válido
+                            // Puedes mostrar un Toast o log
+                        }
+                    }
+
+
+
+                    composable("accionesReparacion/{reparacionId}") { backStackEntry ->
+                        val reparacionId = backStackEntry.arguments?.getString("reparacionId")?.toLongOrNull()
+                        usuarioLogueado?.let {
+                            if (reparacionId != null) {
+                                AccionesReparacionScreen(
+                                    reparacionId = reparacionId,
+                                    token = it.token,
+                                    onBack = { navController.popBackStack() },
+                                    onAsignarServicio = { id ->
+                                        navController.navigate("asignarServicio/$id")
+                                    },
+                                    onCambiarEstado = { id ->
+                                        navController.navigate("actualizarEstado/$id")
+                                    }
+                                )
+                            }
                         }
                     }
 
@@ -100,23 +160,57 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    composable("asignarTecnico") {
+                    //Asignar técnico con ID
+                    composable("asignarTecnico/{reparacionId}") { backStackEntry ->
+                        val reparacionId = backStackEntry.arguments?.getString("reparacionId")?.toLongOrNull()
                         usuarioLogueado?.let {
-                            AsignarTecnicoScreen(
+                            if (reparacionId != null) {
+                                AsignarTecnicoScreen(
+                                    token = it.token,
+                                    reparacionId = reparacionId,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+                        }
+                    }
+
+                    // Solicitudes disponibles con navegación a AsignarTecnicoScreen
+                    composable("solicitudesDisponibles") {
+                        SolicitudesDisponiblesScreen(
+                            token = usuarioLogueado?.token ?: "",
+                            rol = usuarioLogueado?.rol ?: "",
+                            onVolver = { navController.popBackStack() },
+                            onAsignarTecnico = { reparacionId ->
+                                navController.navigate("asignarTecnico/$reparacionId")
+                            },
+                            onVerDetalle = { reparacionId ->
+                                navController.navigate("detalleReparacionTecnico/$reparacionId")
+                            }
+                        )
+                    }
+
+                    composable("asignarServicio/{reparacionId}") { backStackEntry ->
+                        val reparacionId = backStackEntry.arguments?.getString("reparacionId")?.toLongOrNull()
+                        usuarioLogueado?.let {
+                            if (reparacionId != null) {
+                                AsignarServicioScreen(
+                                    reparacionId = reparacionId,
+                                    token = it.token,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+                        }
+                    }
+
+                    composable("gestionServicios") {
+                        usuarioLogueado?.let {
+                            GestionServiciosScreen(
                                 token = it.token,
                                 onBack = { navController.popBackStack() }
                             )
                         }
                     }
 
-                    composable("solicitudesDisponibles") {
-                        usuarioLogueado?.let {
-                            SolicitudesDisponiblesScreen(
-                                token = it.token,
-                                onVolver = { navController.popBackStack() }
-                            )
-                        }
-                    }
                 }
             }
         }
