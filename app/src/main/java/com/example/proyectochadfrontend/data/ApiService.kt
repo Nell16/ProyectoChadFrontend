@@ -61,8 +61,33 @@ interface ApiService {
     ): Response<ReparacionResponse>
 
     // --- COMPONENTES ---
-    @GET("componentes/reparacion/{id}")
-    suspend fun getComponentesPorReparacion(@Path("id") id: Long): Response<List<ComponenteDTO>>
+
+    @GET("api/componentes/reparacion/{reparacionId}")
+    suspend fun getComponentesPorReparacion(
+        @Path("reparacionId") reparacionId: Long
+    ): Response<List<ComponenteDTO>>
+
+    @GET("api/componentes")
+    suspend fun getTodosLosComponentes(): Response<List<ComponenteDTO>>
+
+    @POST("api/componentes")
+    suspend fun crearComponente(
+        @Body componente: ComponenteDTO
+    ): Response<ComponenteDTO>
+
+    @PUT("api/componentes/{id}/general")
+    suspend fun actualizarComponenteGeneral(
+        @Path("id") id: Long,
+        @Body componente: ComponenteGeneralDTO
+    ): Response<ComponenteDTO>
+
+    @DELETE("api/componentes/{id}")
+    suspend fun eliminarComponente(
+        @Path("id") id: Long
+    ): Response<Void>
+
+    @POST("api/componentes/generales")
+    suspend fun crearComponenteGeneral(@Body componente: ComponenteGeneralDTO): Response<ComponenteDTO>
 
     // --- SERVICIOS ---
     @GET("api/servicios")

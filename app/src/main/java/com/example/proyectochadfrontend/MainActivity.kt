@@ -71,6 +71,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onGestionServicios = {
                                     navController.navigate("gestionServicios")
+                                },
+                                onGestionComponentes = {
+                                    navController.navigate("gestionComponentes")
                                 }
 
                             )
@@ -210,6 +213,16 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+
+                    composable("gestionComponentes") {
+                        usuarioLogueado?.let {
+                            GestionComponentesScreen(
+                                token = it.token,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
 
                 }
             }

@@ -6,4 +6,3 @@ data class LoginResponse(
     val rol: String,
     val idUsuario: Long
 )
-

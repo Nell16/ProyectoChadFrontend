@@ -1,10 +1,15 @@
 package com.example.proyectochadfrontend.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.data.ReparacionRequest
 import com.example.proyectochadfrontend.data.RetrofitClient
 import kotlinx.coroutines.Dispatchers
@@ -27,71 +32,112 @@ fun CrearReparacionScreen(
     val scope = rememberCoroutineScope()
     val api = RetrofitClient.getClient(token)
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-
-        Text("Nueva Reparación", style = MaterialTheme.typography.headlineSmall)
-
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = tipoEquipo, onValueChange = { tipoEquipo = it }, label = { Text("Tipo de equipo") })
-        OutlinedTextField(value = marca, onValueChange = { marca = it }, label = { Text("Marca") })
-        OutlinedTextField(value = modelo, onValueChange = { modelo = it }, label = { Text("Modelo") })
-        OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción de la falla") })
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                error = null
-                mensaje = null
-
-                if (tipoEquipo.isBlank() || marca.isBlank() || modelo.isBlank() || descripcion.isBlank()) {
-                    error = "Todos los campos son obligatorios"
-                    return@Button
-                }
-
-                val request = ReparacionRequest(
-                    usuarioId = userId,
-                    tipoEquipo = tipoEquipo,
-                    marca = marca,
-                    modelo = modelo,
-                    descripcionFalla = descripcion
-                )
-
-                scope.launch(Dispatchers.IO) {
-                    try {
-                        val response = api.crearReparacion(request)
-                        if (response.isSuccessful) {
-                            mensaje = "Reparación registrada correctamente"
-                            onReparacionCreada()
-                        } else {
-                            error = "Error al registrar: ${response.code()}"
-                        }
-                    } catch (e: Exception) {
-                        error = "Error: ${e.message}"
-                    }
-                }
-            },
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Registrar")
-        }
+            Text(
+                "Nueva Reparación",
+                style = MaterialTheme.typography.headlineSmall,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(8.dp))
+            inputField(tipoEquipo, "Tipo de equipo") { tipoEquipo = it }
+            inputField(marca, "Marca") { marca = it }
+            inputField(modelo, "Modelo") { modelo = it }
+            inputField(descripcion, "Descripción de la falla") { descripcion = it }
 
-        Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text("Volver")
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        mensaje?.let {
+            Button(
+                onClick = {
+                    error = null
+                    mensaje = null
+
+                    if (tipoEquipo.isBlank() || marca.isBlank() || modelo.isBlank() || descripcion.isBlank()) {
+                        error = "Todos los campos son obligatorios"
+                        return@Button
+                    }
+
+                    val request = ReparacionRequest(
+                        usuarioId = userId,
+                        tipoEquipo = tipoEquipo,
+                        marca = marca,
+                        modelo = modelo,
+                        descripcionFalla = descripcion
+                    )
+
+                    scope.launch(Dispatchers.IO) {
+                        try {
+                            val response = api.crearReparacion(request)
+                            if (response.isSuccessful) {
+                                mensaje = "Reparación registrada correctamente"
+                                onReparacionCreada()
+                            } else {
+                                error = "Error al registrar: ${response.code()}"
+                            }
+                        } catch (e: Exception) {
+                            error = "Error: ${e.message}"
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                Text("Registrar")
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
-            Text(it, color = MaterialTheme.colorScheme.primary)
-        }
 
-        error?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
+            Button(onClick = onBack, modifier = Modifier.fillMaxWidth(0.9f)) {
+                Text("Volver")
+            }
+
+            mensaje?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(it, color = MaterialTheme.colorScheme.primary)
+            }
+
+            error?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(it, color = MaterialTheme.colorScheme.error)
+            }
         }
     }
+}
+
+@Composable
+fun inputField(
+    value: String,
+    label: String,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = {
+            Text(label, color = Color.Black, fontWeight = FontWeight.SemiBold)
+        },
+        textStyle = LocalTextStyle.current.copy(
+            color = Color.Black,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        ),
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .padding(vertical = 6.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.Black,
+            unfocusedBorderColor = Color.Gray,
+            cursorColor = Color.Black
+        )
+    )
 }

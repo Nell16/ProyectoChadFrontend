@@ -18,7 +18,7 @@ fun MenuPrincipalScreen(
     onAsignarTecnico: () -> Unit,
     onSolicitudesDisponibles: () -> Unit,
     onGestionServicios: () -> Unit = {},
-    //onGestionComponentes: () -> Unit = {},
+    onGestionComponentes: () -> Unit = {},
     //onGestionTecnicos: () -> Unit = {},
     //onGestionReparaciones: () -> Unit = {}
 ) {
@@ -86,6 +86,13 @@ fun MenuPrincipalScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Gestionar Servicios")
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onGestionComponentes,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Gestionar Componentes")
                     }
                 }
             }

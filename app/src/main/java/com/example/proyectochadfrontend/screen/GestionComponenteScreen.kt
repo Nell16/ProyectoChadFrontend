@@ -8,37 +8,39 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.proyectochadfrontend.data.ComponenteDTO
+import com.example.proyectochadfrontend.data.ComponenteGeneralDTO
 import com.example.proyectochadfrontend.data.RetrofitClient
-import com.example.proyectochadfrontend.data.ServicioDTO
-import com.example.proyectochadfrontend.data.ServicioRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun GestionServiciosScreen(
+fun GestionComponentesScreen(
     token: String,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val api = RetrofitClient.getClient(token)
 
-    var servicios by remember { mutableStateOf<List<ServicioDTO>>(emptyList()) }
+    var componentes by remember { mutableStateOf<List<ComponenteDTO>>(emptyList()) }
     var mensaje by remember { mutableStateOf<String?>(null) }
+
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
-    var servicioEnEdicionId by remember { mutableStateOf<Long?>(null) }
+    var cantidad by remember { mutableStateOf("") }
+    var componenteEnEdicionId by remember { mutableStateOf<Long?>(null) }
 
-    fun cargarServicios() {
+    fun cargarComponentes() {
         scope.launch(Dispatchers.IO) {
             try {
-                val response = api.getServicios()
+                val response = api.getTodosLosComponentes()
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
-                        servicios = response.body() ?: emptyList()
+                        componentes = response.body() ?: emptyList()
                     } else {
-                        mensaje = "Error al cargar servicios"
+                        mensaje = "Error al cargar componentes"
                     }
                 }
             } catch (e: Exception) {
@@ -49,10 +51,12 @@ fun GestionServiciosScreen(
         }
     }
 
-    LaunchedEffect(Unit) { cargarServicios() }
+    LaunchedEffect(Unit) {
+        cargarComponentes()
+    }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Gestión de Servicios", style = MaterialTheme.typography.headlineSmall)
+        Text("Gestión de Componentes", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(8.dp))
 
         mensaje?.let {
@@ -60,7 +64,7 @@ fun GestionServiciosScreen(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // Formulario para agregar/editar servicio
+        // Formulario
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
@@ -80,7 +84,15 @@ fun GestionServiciosScreen(
         OutlinedTextField(
             value = precio,
             onValueChange = { precio = it },
-            label = { Text("Precio", color = Color.Black) },
+            label = { Text("precio", color = Color.Black) },
+            textStyle = LocalTextStyle.current.copy(color = Color.Black),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = cantidad,
+            onValueChange = { cantidad = it },
+            label = { Text("cantidad", color = Color.Black) },
             textStyle = LocalTextStyle.current.copy(color = Color.Black),
             modifier = Modifier.fillMaxWidth()
         )
@@ -90,28 +102,34 @@ fun GestionServiciosScreen(
             Button(onClick = {
                 scope.launch(Dispatchers.IO) {
                     try {
-                        val nuevo = ServicioRequest(nombre, descripcion, precio.toDouble())
+                        val dto = ComponenteGeneralDTO(
+                            nombre = nombre,
+                            descripcion = descripcion,
+                            precio = precio.toDouble(),
+                            cantidad = cantidad.toInt()
+                        )
 
-                        val response = if (servicioEnEdicionId != null) {
-                            api.actualizarServicio(servicioEnEdicionId!!, nuevo)
+                        val response = if (componenteEnEdicionId != null) {
+                            api.actualizarComponenteGeneral(componenteEnEdicionId!!, dto)
                         } else {
-                            api.crearServicio(nuevo)
+                            api.crearComponenteGeneral(dto)
                         }
 
                         withContext(Dispatchers.Main) {
                             if (response.isSuccessful) {
-                                mensaje = if (servicioEnEdicionId != null)
-                                    "Servicio actualizado correctamente"
+                                mensaje = if (componenteEnEdicionId != null)
+                                    "Componente actualizado correctamente"
                                 else
-                                    "Servicio creado correctamente"
+                                    "Componente creado correctamente"
 
                                 nombre = ""
                                 descripcion = ""
                                 precio = ""
-                                servicioEnEdicionId = null
-                                cargarServicios()
+                                cantidad = ""
+                                componenteEnEdicionId = null
+                                cargarComponentes()
                             } else {
-                                mensaje = "Error al guardar el servicio"
+                                mensaje = "Error al guardar componente"
                             }
                         }
                     } catch (e: Exception) {
@@ -121,16 +139,16 @@ fun GestionServiciosScreen(
                     }
                 }
             }) {
-                Text(if (servicioEnEdicionId != null) "Actualizar Servicio" else "Agregar Servicio")
+                Text(if (componenteEnEdicionId != null) "Actualizar Componente" else "Agregar Componente")
             }
 
-            // Botón para cancelar edición
-            if (servicioEnEdicionId != null) {
+            if (componenteEnEdicionId != null) {
                 Button(onClick = {
-                    servicioEnEdicionId = null
+                    componenteEnEdicionId = null
                     nombre = ""
                     descripcion = ""
                     precio = ""
+                    cantidad = ""
                     mensaje = "Edición cancelada"
                 }) {
                     Text("Cancelar")
@@ -143,40 +161,39 @@ fun GestionServiciosScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(modifier = Modifier.weight(1f)) {
-            items(servicios) { servicio ->
+            items(componentes) { componente ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Nombre: ${servicio.nombre}")
-                        Text("Descripción: ${servicio.descripcion}")
-                        Text("Precio: ${servicio.precioBase}")
+                        Text("Nombre: ${componente.nombre}")
+                        Text("Descripción: ${componente.descripcion}")
+                        Text("Precio: ${componente.precio}")
+                        Text("Cantidad: ${componente.cantidad}")
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Button(onClick = {
-                                nombre = servicio.nombre
-                                descripcion = servicio.descripcion
-                                precio = servicio.precioBase.toString()
-                                servicioEnEdicionId = servicio.id
-                                mensaje = "Editando servicio ID ${servicio.id}"
+                                nombre = componente.nombre
+                                descripcion = componente.descripcion
+                                precio = componente.precio.toString()
+                                cantidad = componente.cantidad.toString()
+                                componenteEnEdicionId = componente.id
+                                mensaje = "Editando componente ID ${componente.id}"
                             }) {
                                 Text("Editar")
                             }
 
                             Button(onClick = {
                                 scope.launch(Dispatchers.IO) {
-                                    val response = api.eliminarServicio(servicio.id)
+                                    val response = api.eliminarComponente(componente.id)
                                     withContext(Dispatchers.Main) {
                                         if (response.isSuccessful) {
-                                            mensaje = "Servicio eliminado"
-                                            cargarServicios()
+                                            mensaje = "Componente eliminado"
+                                            cargarComponentes()
                                         } else {
-                                            mensaje = "Error al eliminar, servicio en uso!"
+                                            mensaje = "Error al eliminar"
                                         }
                                     }
                                 }
@@ -195,4 +212,3 @@ fun GestionServiciosScreen(
         }
     }
 }
-
