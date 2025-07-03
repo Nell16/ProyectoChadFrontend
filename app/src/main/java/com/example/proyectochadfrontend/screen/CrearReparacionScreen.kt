@@ -1,17 +1,26 @@
 package com.example.proyectochadfrontend.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.data.ReparacionRequest
 import com.example.proyectochadfrontend.data.RetrofitClient
+import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
+import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -32,112 +41,138 @@ fun CrearReparacionScreen(
     val scope = rememberCoroutineScope()
     val api = RetrofitClient.getClient(token)
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.pantallabackground),
+            contentDescription = "Fondo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Text(
-                "Nueva Reparación",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color.Black
-            )
+            // Botón de retorno
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(color = cyberpunkPink, shape = CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    "Crear Solicitud",
+                    color = cyberpunkCyan,
+                    fontFamily = Rajdhani,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            inputField(tipoEquipo, "Tipo de equipo") { tipoEquipo = it }
-            inputField(marca, "Marca") { marca = it }
-            inputField(modelo, "Modelo") { modelo = it }
-            inputField(descripcion, "Descripción de la falla") { descripcion = it }
+            CyberpunkTextField(
+                value = tipoEquipo,
+                onValueChange = { tipoEquipo = it },
+                label = "Tipo de equipo",
+                modifier = Modifier.fillMaxWidth(0.95f)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CyberpunkTextField(
+                value = marca,
+                onValueChange = { marca = it },
+                label = "Marca",
+                modifier = Modifier.fillMaxWidth(0.95f)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CyberpunkTextField(
+                value = modelo,
+                onValueChange = { modelo = it },
+                label = "Modelo",
+                modifier = Modifier.fillMaxWidth(0.95f)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CyberpunkTextField(
+                value = descripcion,
+                onValueChange = { descripcion = it },
+                label = "Descripción de la falla",
+                modifier = Modifier.fillMaxWidth(0.95f)
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    error = null
-                    mensaje = null
+            CyberButton("Registrar") {
+                error = null
+                mensaje = null
 
-                    if (tipoEquipo.isBlank() || marca.isBlank() || modelo.isBlank() || descripcion.isBlank()) {
-                        error = "Todos los campos son obligatorios"
-                        return@Button
-                    }
+                if (tipoEquipo.isBlank() || marca.isBlank() || modelo.isBlank() || descripcion.isBlank()) {
+                    error = "Todos los campos son obligatorios"
+                    return@CyberButton
+                }
 
-                    val request = ReparacionRequest(
-                        usuarioId = userId,
-                        tipoEquipo = tipoEquipo,
-                        marca = marca,
-                        modelo = modelo,
-                        descripcionFalla = descripcion
-                    )
+                val request = ReparacionRequest(
+                    usuarioId = userId,
+                    tipoEquipo = tipoEquipo,
+                    marca = marca,
+                    modelo = modelo,
+                    descripcionFalla = descripcion
+                )
 
-                    scope.launch(Dispatchers.IO) {
-                        try {
-                            val response = api.crearReparacion(request)
-                            if (response.isSuccessful) {
-                                mensaje = "Reparación registrada correctamente"
-                                onReparacionCreada()
-                            } else {
-                                error = "Error al registrar: ${response.code()}"
-                            }
-                        } catch (e: Exception) {
-                            error = "Error: ${e.message}"
+                scope.launch(Dispatchers.IO) {
+                    try {
+                        val response = api.crearReparacion(request)
+                        if (response.isSuccessful) {
+                            mensaje = "Reparación registrada correctamente"
+                            onReparacionCreada()
+                        } else {
+                            error = "Error al registrar: ${response.code()}"
                         }
+                    } catch (e: Exception) {
+                        error = "Error: ${e.message}"
                     }
-                },
-                modifier = Modifier.fillMaxWidth(0.9f)
-            ) {
-                Text("Registrar")
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(onClick = onBack, modifier = Modifier.fillMaxWidth(0.9f)) {
-                Text("Volver")
-            }
-
             mensaje?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    it,
+                    color = cyberpunkYellow,
+                    fontFamily = Rajdhani,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             error?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
+                Text(
+                    it,
+                    color = cyberpunkPink,
+                    fontFamily = Rajdhani,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
-}
-
-@Composable
-fun inputField(
-    value: String,
-    label: String,
-    onValueChange: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = {
-            Text(label, color = Color.Black, fontWeight = FontWeight.SemiBold)
-        },
-        textStyle = LocalTextStyle.current.copy(
-            color = Color.Black,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
-        ),
-        modifier = Modifier
-            .fillMaxWidth(0.9f)
-            .padding(vertical = 6.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Black,
-            unfocusedBorderColor = Color.Gray,
-            cursorColor = Color.Black
-        )
-    )
 }

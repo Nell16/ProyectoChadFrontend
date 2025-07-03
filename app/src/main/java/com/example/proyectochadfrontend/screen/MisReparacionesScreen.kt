@@ -1,14 +1,27 @@
 package com.example.proyectochadfrontend.screen
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.data.ReparacionResponse
 import com.example.proyectochadfrontend.data.RetrofitClient
+import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,7 +32,7 @@ fun MisReparacionesScreen(
     token: String,
     onBack: () -> Unit,
     onVerDetalle: (Long) -> Unit,
-    rol: String, // "CLIENTE" o "TECNICO"
+    rol: String,
     onAccionesReparacion: ((Long) -> Unit)? = null
 ) {
     var reparaciones by remember { mutableStateOf<List<ReparacionResponse>>(emptyList()) }
@@ -59,51 +72,98 @@ fun MisReparacionesScreen(
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.pantallabackground),
+            contentDescription = "Fondo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-        Text("Mis Reparaciones", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Text("Volver")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (error != null) {
-            Text("Error: $error", color = MaterialTheme.colorScheme.error)
-        }
-
-        LazyColumn {
-            items(reparaciones) { rep ->
-                Card(
+            // Botón de retorno
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = onBack,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .size(42.dp)
+                        .background(color = cyberpunkPink, shape = CircleShape)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Equipo: ${rep.tipoEquipo} - ${rep.marca} ${rep.modelo}")
-                        Text("Estado: ${rep.estado}")
-                        Text("Problema: ${rep.descripcionFalla}")
-                        Text("Fecha: ${rep.fechaIngreso}")
-                        rep.diagnostico?.let { Text("Diagnóstico: $it") }
-                        rep.solucion?.let { Text("Solución: $it") }
-                        rep.costo?.let { Text("Costo: $it USD") }
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = Color.White
+                    )
+                }
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = { onVerDetalle(rep.id) }) {
-                                Text("Ver Detalle")
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    "Mis Reparaciones",
+                    color = cyberpunkCyan,
+                    fontFamily = Rajdhani,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            error?.let {
+                Text("Error: $it", color = cyberpunkYellow, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(reparaciones) { rep ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(containerColor = cyberpunkSurface)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Equipo: ${rep.tipoEquipo} - ${rep.marca} ${rep.modelo}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                            Text("Estado: ${rep.estado}", color = cyberpunkCyan, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                            Text("Problema: ${rep.descripcionFalla}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                            Text("Fecha: ${rep.fechaIngreso}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+
+                            rep.diagnostico?.let {
+                                Text("Diagnóstico: $it", color = cyberpunkYellow, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
                             }
 
-                            if (rol == "TECNICO" || rol == "ADMIN") {
-                                Button(onClick = { onAccionesReparacion?.invoke(rep.id) }) {
-                                    Text("Acciones")
+                            rep.solucion?.let {
+                                Text("Solución: $it", color = cyberpunkPink, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                            }
+
+                            rep.costo?.let {
+                                Text("Costo: $it USD", color = cyberpunkCyan, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Button(
+                                    onClick = { onVerDetalle(rep.id) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = cyberpunkCyan)
+                                ) {
+                                    Text("Ver Detalle", color = Color.Black, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                                }
+
+                                if (rol == "TECNICO" || rol == "ADMIN") {
+                                    Button(
+                                        onClick = { onAccionesReparacion?.invoke(rep.id) },
+                                        colors = ButtonDefaults.buttonColors(containerColor = cyberpunkPink)
+                                    ) {
+                                        Text("Acciones", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                                    }
                                 }
                             }
                         }
@@ -113,4 +173,3 @@ fun MisReparacionesScreen(
         }
     }
 }
-

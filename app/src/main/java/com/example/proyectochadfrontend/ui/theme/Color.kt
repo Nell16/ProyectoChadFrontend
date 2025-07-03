@@ -15,3 +15,4 @@ val cyberpunkCyan = Color(0xFF00F0FF)
 val cyberpunkPink = Color(0xFFFF005C)
 val cyberpunkDarkGray = Color(0xFF1A1A1A)
 val cyberpunkSurface = Color(0xFF2B2B2B)
+
