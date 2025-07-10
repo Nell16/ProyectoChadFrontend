@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import com.example.proyectochadfrontend.ui.theme.*
 
@@ -17,6 +18,7 @@ fun GlitchText(
     text: String,
     modifier: Modifier = Modifier,
     fontSize: TextUnit = 24.sp,
+    fontWeight: FontWeight = FontWeight.Normal,
     color: Color = cyberpunkCyan,
     style: TextStyle = TextStyle.Default.copy(fontSize = 28.sp)
 ) {
@@ -34,6 +36,8 @@ fun GlitchText(
             text = text,
             style = style,
             color = color,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
             modifier = Modifier.drawWithContent {
                 drawContent()
                 drawContext.canvas.save()

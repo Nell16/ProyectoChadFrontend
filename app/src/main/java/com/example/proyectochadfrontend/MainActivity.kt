@@ -74,8 +74,16 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onGestionComponentes = {
                                     navController.navigate("gestionComponentes")
+                                },
+                                onProfileClick = {
+                                    navController.navigate("perfil")
+                                },
+                                onSettingsClick = {
+                                    navController.navigate("configuracion")
+                                },
+                                onGestionUsuarios = {
+                                    navController.navigate("gestionUsuarios")
                                 }
-
                             )
                         }
                     }
@@ -188,6 +196,17 @@ class MainActivity : ComponentActivity() {
                             },
                             onVerDetalle = { reparacionId ->
                                 navController.navigate("detalleReparacionTecnico/$reparacionId")
+                            },
+                            onHomeClick = {
+                                navController.navigate("menu") {
+                                    popUpTo("menu") { inclusive = true }
+                                }
+                            },
+                            onProfileClick = {
+                                navController.navigate("perfil")
+                            },
+                            onSettingsClick = {
+                                navController.navigate("configuracion")
                             }
                         )
                     }
@@ -218,11 +237,74 @@ class MainActivity : ComponentActivity() {
                         usuarioLogueado?.let {
                             GestionComponentesScreen(
                                 token = it.token,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                onHomeClick = {
+                                    navController.navigate("menu") {
+                                        popUpTo("menu") { inclusive = true }
+                                    }
+                                },
+                                onProfileClick = {
+                                    navController.navigate("perfil")
+                                },
+                                onSettingsClick = {
+                                    navController.navigate("configuracion")
+                                }
                             )
                         }
                     }
 
+                    composable("perfil") {
+                        usuarioLogueado?.let {
+                            PerfilScreen(
+                                usuario = it,
+                                onBack = { navController.popBackStack() },
+                                onLogout = {
+                                    scope.launch { userPrefs.clear() }
+                                    usuarioLogueado = null
+                                    navController.navigate("login") {
+                                        popUpTo("perfil") { inclusive = true }
+                                    }
+                                },
+                                onHomeClick = {
+                                    navController.navigate("menu") {
+                                        popUpTo("menu") { inclusive = true }
+                                    }
+                                },
+                                onProfileClick = {},
+                                onSettingsClick = {
+                                    navController.navigate("configuracion")
+                                }
+                            )
+                        }
+                    }
+
+                    composable("configuracion") {
+                        ConfiguracionScreen(
+                            onBack = { navController.popBackStack() },
+                            onLogout = {
+                                scope.launch { userPrefs.clear() }
+                                usuarioLogueado = null
+                                navController.navigate("login") {
+                                    popUpTo("configuracion") { inclusive = true }
+                                }
+                            },
+                            onHomeClick = { navController.navigate("menu") },
+                            onProfileClick = { navController.navigate("perfil") },
+                            onSettingsClick = {}
+                        )
+                    }
+
+                    composable("gestionUsuarios") {
+                        usuarioLogueado?.let {
+                            GestionUsuariosScreen(
+                                token = it.token,
+                                onBack = { navController.popBackStack() },
+                                onHomeClick = { navController.navigate("menu") },
+                                onProfileClick = { navController.navigate("perfil") },
+                                onSettingsClick = { navController.navigate("configuracion") }
+                            )
+                        }
+                    }
 
                 }
             }

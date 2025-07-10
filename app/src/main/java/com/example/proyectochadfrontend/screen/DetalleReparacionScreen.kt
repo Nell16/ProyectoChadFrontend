@@ -113,7 +113,7 @@ fun DetalleReparacionClienteScreen(
                     Text("Costo: $it USD", color = cyberpunkCyan, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
                 }
                 rep.tecnico?.let {
-                    Text("Técnico Asignado: ${it.nombre}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                    Text("Técnico Asignado: ${it.primerNombre}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
                 }
                 rep.servicio?.let {
                     Text("Servicio: ${it.nombre} - ${it.descripcion}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)

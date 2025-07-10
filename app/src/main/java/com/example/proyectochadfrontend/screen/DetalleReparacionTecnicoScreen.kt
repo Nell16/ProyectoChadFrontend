@@ -64,7 +64,7 @@ fun DetalleReparacionTecnicoScreen(
             Text("Fecha Ingreso: ${rep.fechaIngreso}")
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text("Cliente: ${rep.usuario.nombre}")
+            Text("Cliente: ${rep.usuario.primerNombre}")
             Text("Correo: ${rep.usuario.correo}")
 
             rep.diagnostico?.let { Text("Diagnóstico: $it") }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.data.LoginRequest
@@ -43,14 +44,19 @@ fun LoginScreen(
             ) {
                 GlitchText(
                     text = "Gestion tecnica sigma",
-                    fontSize = 32.sp
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
                 )
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 CyberpunkTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = "Correo electrónico"
+                    label = "Correo electrónico",
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -58,7 +64,11 @@ fun LoginScreen(
                     value = password,
                     onValueChange = { password = it },
                     label = "Contraseña",
-                    isPassword = true
+                    isPassword = true,
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -106,7 +116,8 @@ fun LoginScreen(
                     Text(
                         text = errorMsg ?: "",
                         color = MaterialTheme.colorScheme.error,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold // ✅ mensaje de error en bold
                     )
                 }
             }

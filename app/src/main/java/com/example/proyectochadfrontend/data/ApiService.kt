@@ -1,5 +1,6 @@
 package com.example.proyectochadfrontend.data
 
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -14,6 +15,10 @@ interface ApiService {
     suspend fun getTecnicos(
         @Query("rol") rol: String = "TECNICO"
     ): Response<List<UsuarioDTO>>
+
+    @GET("api/usuarios")
+    suspend fun getTodosLosUsuarios(): Response<List<UsuarioDTO>>
+
 
     // --- REPARACIONES (Clientes) ---
     @POST("api/reparaciones")
@@ -104,6 +109,22 @@ interface ApiService {
         @Path("id") id: Long,
         @Body servicio: ServicioRequest
     ): Response<ServicioDTO>
+
+
+    // --- FOTOS PERFIL ---
+    @Multipart
+    @POST("api/usuarios/{id}/foto")
+    suspend fun subirFotoPerfil(
+        @Path("id") userId: Long,
+        @Part archivo: MultipartBody.Part
+    ): Response<String>
+
+    @PUT("api/usuarios/{id}")
+    suspend fun actualizarPerfil(
+        @Path("id") id: Long,
+        @Body usuario: UsuarioDTO
+    ): Response<UsuarioDTO>
+
 
     // NOTA: Agrega aquí futuras funciones según avance el proyecto.
 }

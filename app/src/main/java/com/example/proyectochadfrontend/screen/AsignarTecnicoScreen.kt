@@ -86,7 +86,7 @@ fun AsignarTecnicoScreen(
                         .padding(vertical = 8.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Nombre: ${tecnico.nombre}")
+                        Text("Nombre: ${tecnico.primerNombre}")
                         Text("Correo: ${tecnico.correo}")
                         Text("Rol: ${tecnico.rol}")
                         if (cantidad != null) {
