@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.*
-import com.example.proyectochadfrontend.data.LoginResponse
+import com.example.proyectochadfrontend.model.LoginResponse
 import com.example.proyectochadfrontend.screen.*
 import com.example.proyectochadfrontend.ui.theme.ProyectoChadFrontendTheme
 import com.example.proyectochadfrontend.util.UserPreferences
@@ -98,6 +98,17 @@ class MainActivity : ComponentActivity() {
                                 onVerDetalle = { reparacionId ->
                                     navController.navigate("detalleReparacionCliente/$reparacionId")
                                 },
+                                onHomeClick = {
+                                    navController.navigate("menu") {
+                                        popUpTo("menu") { inclusive = true }
+                                    }
+                                },
+                                onProfileClick = {
+                                    navController.navigate("perfil")
+                                },
+                                onSettingsClick = {
+                                    navController.navigate("configuracion")
+                                },
                                 onAccionesReparacion = { reparacionId ->
                                     navController.navigate("accionesReparacion/$reparacionId")
                                 }
@@ -135,8 +146,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-
-
                     composable("accionesReparacion/{reparacionId}") { backStackEntry ->
                         val reparacionId = backStackEntry.arguments?.getString("reparacionId")?.toLongOrNull()
                         usuarioLogueado?.let {
@@ -144,17 +153,28 @@ class MainActivity : ComponentActivity() {
                                 AccionesReparacionScreen(
                                     reparacionId = reparacionId,
                                     token = it.token,
+                                    rol = it.rol,
                                     onBack = { navController.popBackStack() },
-                                    onAsignarServicio = { id ->
-                                        navController.navigate("asignarServicio/$id")
+                                    onAsignarServicio = { id -> navController.navigate("asignarServicio/$id") },
+                                    onAsignarTecnico = { id -> navController.navigate("asignarTecnico/$id") },
+                                    onDiagnosticar = { id -> navController.navigate("diagnosticar/$id") },
+                                    onAsignarComponentes = { id -> navController.navigate("asignarComponentes/$id") },
+                                    onCambiarEstado = { id -> navController.navigate("actualizarEstado/$id") },
+                                    onVerFactura = { id -> navController.navigate("factura/$id") },
+                                    onVerHistorial = { id -> navController.navigate("historial/$id") },
+                                    onHomeClick = {
+                                        navController.navigate("menu") {
+                                            popUpTo("menu") { inclusive = true }
+                                        }
                                     },
-                                    onCambiarEstado = { id ->
-                                        navController.navigate("actualizarEstado/$id")
-                                    }
+                                    onProfileClick = { navController.navigate("perfil") },
+                                    onSettingsClick = { navController.navigate("configuracion") }
                                 )
                             }
                         }
                     }
+
+
 
                     composable("crearReparacion") {
                         usuarioLogueado?.let {
@@ -185,7 +205,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    // Solicitudes disponibles con navegación a AsignarTecnicoScreen
                     composable("solicitudesDisponibles") {
                         SolicitudesDisponiblesScreen(
                             token = usuarioLogueado?.token ?: "",
@@ -218,11 +237,16 @@ class MainActivity : ComponentActivity() {
                                 AsignarServicioScreen(
                                     reparacionId = reparacionId,
                                     token = it.token,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onAsignacionExitosa = {
+                                        navController.popBackStack()
+                                    }
                                 )
                             }
                         }
                     }
+
+
 
                     composable("gestionServicios") {
                         usuarioLogueado?.let {
@@ -305,6 +329,38 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+
+                    composable("asignarComponentes/{reparacionId}") { backStackEntry ->
+                        val reparacionId = backStackEntry.arguments?.getString("reparacionId")?.toLongOrNull()
+                        usuarioLogueado?.let {
+                            if (reparacionId != null) {
+                                AsignarComponentesScreen(
+                                    token = it.token,
+                                    reparacionId = reparacionId,
+                                    onBack = { navController.popBackStack() },
+                                    onAsignacionExitosa = {
+                                        navController.popBackStack()
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    composable("diagnosticar/{reparacionId}") { backStackEntry ->
+                        val reparacionId = backStackEntry.arguments?.getString("reparacionId")?.toLongOrNull()
+                        usuarioLogueado?.let {
+                            if (reparacionId != null) {
+                                DiagnosticoScreen(
+                                    reparacionId = reparacionId,
+                                    token = it.token,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+                        }
+                    }
+
+
+
 
                 }
             }

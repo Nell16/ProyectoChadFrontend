@@ -46,47 +46,41 @@ fun ConfiguracionScreen(
         onProfileClick = onProfileClick,
         onSettingsClick = onSettingsClick
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(id = R.drawable.pantallabackground),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize().alpha(0.25f)
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Spacer(modifier = Modifier.height(32.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(color = cyberpunkPink, shape = CircleShape)
                 ) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(42.dp)
-                            .background(color = cyberpunkPink, shape = CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.White
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Configuración",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = cyberpunkCyan
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = Color.White
                     )
                 }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Configuración",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = cyberpunkCyan
+                )
+            }
 
-                Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 SettingItem("Notificaciones", notificaciones) { notificaciones = it }
                 SettingItem("Usar tema oscuro", usarCyberpunk) { usarCyberpunk = it }
 
@@ -97,7 +91,9 @@ fun ConfiguracionScreen(
                     value = idioma,
                     onValueChange = {},
                     label = "Seleccionar Idioma",
-                    modifier = Modifier.clickable { desplegarListaIdiomas = !desplegarListaIdiomas },
+                    modifier = Modifier
+                        .clickable { desplegarListaIdiomas = !desplegarListaIdiomas }
+                        .fillMaxWidth(),
                     enabled = false
                 )
 
@@ -128,7 +124,8 @@ fun ConfiguracionScreen(
 
                 Button(
                     onClick = { /* Sin funcionalidad */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = cyberpunkPink)
+                    colors = ButtonDefaults.buttonColors(containerColor = cyberpunkPink),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Contactar soporte", color = Color.White, fontWeight = FontWeight.Bold)
                 }
@@ -140,14 +137,16 @@ fun ConfiguracionScreen(
                         value = nuevaContrasena,
                         onValueChange = { nuevaContrasena = it },
                         label = "Nueva contraseña",
-                        isPassword = true
+                        isPassword = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     CyberpunkTextField(
                         value = confirmarContrasena,
                         onValueChange = { confirmarContrasena = it },
                         label = "Confirmar contraseña",
-                        isPassword = true
+                        isPassword = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
@@ -156,14 +155,16 @@ fun ConfiguracionScreen(
                             nuevaContrasena = ""
                             confirmarContrasena = ""
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = cyberpunkCyan)
+                        colors = ButtonDefaults.buttonColors(containerColor = cyberpunkCyan),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Guardar", fontWeight = FontWeight.Bold, color = Color.Black)
                     }
                 } else {
                     Button(
                         onClick = { mostrarCambioContrasena = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = cyberpunkCyan)
+                        colors = ButtonDefaults.buttonColors(containerColor = cyberpunkCyan),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Cambiar Contraseña", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
@@ -172,7 +173,8 @@ fun ConfiguracionScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = onLogout,
-                    colors = ButtonDefaults.buttonColors(containerColor = cyberpunkPink)
+                    colors = ButtonDefaults.buttonColors(containerColor = cyberpunkPink),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Cerrar sesión", fontWeight = FontWeight.Bold, color = Color.White)
                 }

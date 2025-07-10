@@ -1,4 +1,4 @@
-package com.example.proyectochadfrontend.data
+package com.example.proyectochadfrontend.model
 
 data class ServicioDTO(
     val id: Long,

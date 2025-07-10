@@ -19,8 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.components.AppScaffold
-import com.example.proyectochadfrontend.data.*
-import com.example.proyectochadfrontend.components.AppScaffold
+import com.example.proyectochadfrontend.model.*
 import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers

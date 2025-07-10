@@ -1,3 +1,4 @@
+
 package com.example.proyectochadfrontend.screen
 
 import androidx.compose.foundation.Image
@@ -8,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,8 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.components.AppScaffold
-import com.example.proyectochadfrontend.data.UsuarioDTO
-import com.example.proyectochadfrontend.data.RetrofitClient
+import com.example.proyectochadfrontend.model.UsuarioDTO
+import com.example.proyectochadfrontend.model.RetrofitClient
 import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.launch
@@ -38,38 +38,28 @@ fun GestionUsuariosScreen(
     val scope = rememberCoroutineScope()
     val api = RetrofitClient.getClient(token)
     var usuarios by remember { mutableStateOf<List<UsuarioDTO>>(emptyList()) }
-
-    LaunchedEffect(Unit) {
-        scope.launch {
-            try {
-                val response = api.getTodosLosUsuarios()
-                if (response.isSuccessful) {
-                    usuarios = response.body() ?: emptyList()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
+    var usuarioEditando by remember { mutableStateOf<UsuarioDTO?>(null) }
+    var nuevoRol by remember { mutableStateOf("CLIENTE") }
 
     var filtroRol by remember { mutableStateOf("Todos") }
     var busquedaNombre by remember { mutableStateOf("") }
 
     val rolesDisponibles = listOf("Todos", "CLIENTE", "TECNICO", "ADMIN")
+    val soloRoles = listOf("CLIENTE", "TECNICO", "ADMIN")
 
-    // Cargar usuarios al iniciar
-    LaunchedEffect(Unit) {
+    fun cargarUsuarios() {
         scope.launch {
             try {
                 val response = api.getTodosLosUsuarios()
                 if (response.isSuccessful) {
                     usuarios = response.body() ?: emptyList()
                 }
-            } catch (e: Exception) {
-                // Manejo de error
+            } catch (_: Exception) {
             }
         }
     }
+
+    LaunchedEffect(Unit) { cargarUsuarios() }
 
     val usuariosFiltrados = usuarios.filter {
         (filtroRol == "Todos" || it.rol == filtroRol) &&
@@ -155,7 +145,10 @@ fun GestionUsuariosScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Button(
-                                        onClick = { /* editar */ },
+                                        onClick = {
+                                            usuarioEditando = usuario
+                                            nuevoRol = usuario.rol
+                                        },
                                         colors = ButtonDefaults.buttonColors(containerColor = cyberpunkYellow)
                                     ) {
                                         Text("Editar", color = Color.Black)
@@ -173,15 +166,46 @@ fun GestionUsuariosScreen(
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
+            }
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    FloatingActionButton(
-                        onClick = { /* abrir dialog */ },
-                        containerColor = cyberpunkPink
-                    ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
+            usuarioEditando?.let { usuario ->
+                AlertDialog(
+                    onDismissRequest = { usuarioEditando = null },
+                    title = {
+                        Text("Cambiar Rol", fontWeight = FontWeight.Bold, fontFamily = Rajdhani)
+                    },
+                    text = {
+                        Column {
+                            Text("Selecciona el nuevo rol para ${usuario.primerNombre} ${usuario.primerApellido}", fontFamily = Rajdhani)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            DropdownMenuRolFiltro(nuevoRol, soloRoles) { nuevoRol = it }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                scope.launch {
+                                    try {
+                                        val result = api.actualizarRolUsuario(usuario.id, nuevoRol)
+                                        if (result.isSuccessful) {
+                                            cargarUsuarios()
+                                            usuarioEditando = null
+                                        }
+                                    } catch (_: Exception) {}
+                                }
+                            }
+                        ) {
+                            Text("Actualizar", color = cyberpunkCyan, fontWeight = FontWeight.Bold)
+                        }
                     }
-                }
+                    ,
+                    dismissButton = {
+                        TextButton(onClick = { usuarioEditando = null }) {
+                            Text("Cancelar", color = Color.White)
+                        }
+                    },
+                    containerColor = cyberpunkSurface
+                )
             }
         }
     }

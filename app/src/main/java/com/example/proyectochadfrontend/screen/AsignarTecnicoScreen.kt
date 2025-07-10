@@ -1,14 +1,28 @@
 package com.example.proyectochadfrontend.screen
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.proyectochadfrontend.data.RetrofitClient
-import com.example.proyectochadfrontend.data.UsuarioDTO
+import androidx.compose.ui.unit.sp
+import com.example.proyectochadfrontend.R
+import com.example.proyectochadfrontend.model.RetrofitClient
+import com.example.proyectochadfrontend.model.UsuarioDTO
+import com.example.proyectochadfrontend.components.AppScaffold
+import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -17,11 +31,14 @@ import kotlinx.coroutines.withContext
 fun AsignarTecnicoScreen(
     token: String,
     reparacionId: Long,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onHomeClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     var tecnicos by remember { mutableStateOf<List<UsuarioDTO>>(emptyList()) }
-    var cargaReparaciones by remember { mutableStateOf<Map<Long, Int>>(emptyMap()) } // técnicoId -> cantidad activa
+    var cargaReparaciones by remember { mutableStateOf<Map<Long, Int>>(emptyMap()) }
     var mensaje by remember { mutableStateOf<String?>(null) }
 
     val api = RetrofitClient.getClient(token)
@@ -34,7 +51,6 @@ fun AsignarTecnicoScreen(
                     val listaTecnicos = response.body() ?: emptyList()
                     tecnicos = listaTecnicos
 
-                    // Consultar reparaciones activas por cada técnico
                     val mapeo = mutableMapOf<Long, Int>()
                     for (tecnico in listaTecnicos) {
                         val reparacionesResp = api.getReparacionesPorTecnico(tecnico.id)
@@ -44,7 +60,7 @@ fun AsignarTecnicoScreen(
                             } ?: emptyList()
                             mapeo[tecnico.id] = activas.size
                         } else {
-                            mapeo[tecnico.id] = -1 // error al cargar
+                            mapeo[tecnico.id] = -1
                         }
                     }
 
@@ -64,79 +80,121 @@ fun AsignarTecnicoScreen(
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    AppScaffold(
+        selectedItem = "",
+        onHomeClick = onHomeClick,
+        onProfileClick = onProfileClick,
+        onSettingsClick = onSettingsClick
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(id = R.drawable.pantallabackground),
+                contentDescription = "Fondo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
 
-        Text("Asignar Técnico", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(32.dp))
 
-        if (mensaje != null) {
-            Text(mensaje!!, color = MaterialTheme.colorScheme.error)
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        LazyColumn {
-            items(tecnicos) { tecnico ->
-                val cantidad = cargaReparaciones[tecnico.id]
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Nombre: ${tecnico.primerNombre}")
-                        Text("Correo: ${tecnico.correo}")
-                        Text("Rol: ${tecnico.rol}")
-                        if (cantidad != null) {
-                            if (cantidad >= 0) {
-                                Text("Reparaciones activas: $cantidad")
-                                if (cantidad >= 5) {
-                                    Text(
-                                        text = "Este técnico ha alcanzado el limite!",
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                            } else {
-                                Text("Error al obtener cantidad de reparaciones")
-                            }
-                        }
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .background(color = cyberpunkPink, shape = CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.White
+                        )
+                    }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                        Button(
-                            onClick = {
-                                scope.launch(Dispatchers.IO) {
-                                    try {
-                                        val response = api.asignarTecnico(reparacionId, tecnico.id)
-                                        withContext(Dispatchers.Main) {
-                                            if (response.isSuccessful) {
-                                                mensaje = "Técnico asignado correctamente"
-                                            } else {
-                                                mensaje = "Error al asignar técnico"
-                                            }
+                    Text(
+                        text = "Asignar Técnico",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = cyberpunkCyan
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                mensaje?.let {
+                    Text(it, color = cyberpunkYellow, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(tecnicos) { tecnico ->
+                        val cantidad = cargaReparaciones[tecnico.id]
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            colors = CardDefaults.cardColors(containerColor = cyberpunkSurface)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text("Nombre: ${tecnico.primerNombre}", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("Correo: ${tecnico.correo}", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("Rol: ${tecnico.rol}", color = Color.White, fontWeight = FontWeight.Bold)
+                                if (cantidad != null) {
+                                    if (cantidad >= 0) {
+                                        Text("Reparaciones activas: $cantidad", color = cyberpunkYellow)
+                                        if (cantidad >= 5) {
+                                            Text(
+                                                text = "Este técnico ha alcanzado el límite!",
+                                                color = cyberpunkPink,
+                                                fontWeight = FontWeight.Bold
+                                            )
                                         }
-                                    } catch (e: Exception) {
-                                        withContext(Dispatchers.Main) {
-                                            mensaje = "Error: ${e.message}"
-                                        }
+                                    } else {
+                                        Text("Error al obtener cantidad de reparaciones", color = Color.Red)
                                     }
                                 }
-                            },
-                            enabled = cantidad != null && cantidad < 5, // 🔒 desactiva si >= 5
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Asignar a esta reparación")
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Button(
+                                    onClick = {
+                                        scope.launch(Dispatchers.IO) {
+                                            try {
+                                                val response = api.asignarTecnico(reparacionId, tecnico.id)
+                                                withContext(Dispatchers.Main) {
+                                                    mensaje = if (response.isSuccessful)
+                                                        "Técnico asignado correctamente"
+                                                    else
+                                                        "Error al asignar técnico"
+                                                }
+                                            } catch (e: Exception) {
+                                                withContext(Dispatchers.Main) {
+                                                    mensaje = "Error: ${e.message}"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    enabled = cantidad != null && cantidad < 5,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = cyberpunkCyan)
+                                ) {
+                                    Text("Asignar a esta reparación", color = Color.Black, fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text("Volver")
         }
     }
 }

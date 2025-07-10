@@ -17,12 +17,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.R
-import com.example.proyectochadfrontend.data.ReparacionRequest
-import com.example.proyectochadfrontend.data.RetrofitClient
+import com.example.proyectochadfrontend.components.AppScaffold
+import com.example.proyectochadfrontend.model.ReparacionRequest
+import com.example.proyectochadfrontend.model.RetrofitClient
 import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
+import com.example.proyectochadfrontend.ui.components.CyberpunkButton
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun CrearReparacionScreen(
@@ -41,138 +44,158 @@ fun CrearReparacionScreen(
     val scope = rememberCoroutineScope()
     val api = RetrofitClient.getClient(token)
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.pantallabackground),
-            contentDescription = "Fondo",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
+    AppScaffold(
+        selectedItem = "",
+        onHomeClick = onBack,
+        onProfileClick = {},
+        onSettingsClick = {}
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(id = R.drawable.pantallabackground),
+                contentDescription = "Fondo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            // Botón de retorno
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(color = cyberpunkPink, shape = CircleShape)
+                // Encabezado
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = Color.White
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .background(cyberpunkPink, shape = CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.White
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        text = "Crear Solicitud",
+                        color = cyberpunkCyan,
+                        fontFamily = Rajdhani,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    "Crear Solicitud",
-                    color = cyberpunkCyan,
-                    fontFamily = Rajdhani,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            CyberpunkTextField(
-                value = tipoEquipo,
-                onValueChange = { tipoEquipo = it },
-                label = "Tipo de equipo",
-                modifier = Modifier.fillMaxWidth(0.95f)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            CyberpunkTextField(
-                value = marca,
-                onValueChange = { marca = it },
-                label = "Marca",
-                modifier = Modifier.fillMaxWidth(0.95f)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            CyberpunkTextField(
-                value = modelo,
-                onValueChange = { modelo = it },
-                label = "Modelo",
-                modifier = Modifier.fillMaxWidth(0.95f)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            CyberpunkTextField(
-                value = descripcion,
-                onValueChange = { descripcion = it },
-                label = "Descripción de la falla",
-                modifier = Modifier.fillMaxWidth(0.95f)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CyberButton("Registrar") {
-                error = null
-                mensaje = null
-
-                if (tipoEquipo.isBlank() || marca.isBlank() || modelo.isBlank() || descripcion.isBlank()) {
-                    error = "Todos los campos son obligatorios"
-                    return@CyberButton
-                }
-
-                val request = ReparacionRequest(
-                    usuarioId = userId,
-                    tipoEquipo = tipoEquipo,
-                    marca = marca,
-                    modelo = modelo,
-                    descripcionFalla = descripcion
+                // Campos de texto
+                CyberpunkTextField(
+                    value = tipoEquipo,
+                    onValueChange = { tipoEquipo = it },
+                    label = "Tipo de equipo",
+                    modifier = Modifier.fillMaxWidth(0.95f)
                 )
 
-                scope.launch(Dispatchers.IO) {
-                    try {
-                        val response = api.crearReparacion(request)
-                        if (response.isSuccessful) {
-                            mensaje = "Reparación registrada correctamente"
-                            onReparacionCreada()
-                        } else {
-                            error = "Error al registrar: ${response.code()}"
+                Spacer(modifier = Modifier.height(8.dp))
+
+                CyberpunkTextField(
+                    value = marca,
+                    onValueChange = { marca = it },
+                    label = "Marca",
+                    modifier = Modifier.fillMaxWidth(0.95f)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                CyberpunkTextField(
+                    value = modelo,
+                    onValueChange = { modelo = it },
+                    label = "Modelo",
+                    modifier = Modifier.fillMaxWidth(0.95f)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                CyberpunkTextField(
+                    value = descripcion,
+                    onValueChange = { descripcion = it },
+                    label = "Descripción de la falla",
+                    modifier = Modifier.fillMaxWidth(0.95f)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Botón
+                CyberpunkButton(
+                    text = "Registrar",
+                    onClick = {
+                        error = null
+                        mensaje = null
+
+                        if (tipoEquipo.isBlank() || marca.isBlank() || modelo.isBlank() || descripcion.isBlank()) {
+                            error = "Todos los campos son obligatorios"
+                            return@CyberpunkButton
                         }
-                    } catch (e: Exception) {
-                        error = "Error: ${e.message}"
+
+                        val request = ReparacionRequest(
+                            usuarioId = userId,
+                            tipoEquipo = tipoEquipo,
+                            marca = marca,
+                            modelo = modelo,
+                            descripcionFalla = descripcion
+                        )
+
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                val response = api.crearReparacion(request)
+                                if (response.isSuccessful) {
+                                    withContext(Dispatchers.Main) {
+                                        mensaje = "Reparación registrada correctamente"
+                                        onReparacionCreada()
+                                    }
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        error = "Error al registrar: ${response.code()}"
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    error = "Error: ${e.message}"
+                                }
+                            }
+                        }
                     }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Mensajes
+                mensaje?.let {
+                    Text(
+                        it,
+                        color = cyberpunkYellow,
+                        fontFamily = Rajdhani,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            mensaje?.let {
-                Text(
-                    it,
-                    color = cyberpunkYellow,
-                    fontFamily = Rajdhani,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            error?.let {
-                Text(
-                    it,
-                    color = cyberpunkPink,
-                    fontFamily = Rajdhani,
-                    fontWeight = FontWeight.Bold
-                )
+                error?.let {
+                    Text(
+                        it,
+                        color = cyberpunkPink,
+                        fontFamily = Rajdhani,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
 }
+

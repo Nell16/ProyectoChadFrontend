@@ -1,4 +1,4 @@
-package com.example.proyectochadfrontend.data
+package com.example.proyectochadfrontend.model
 
 import okhttp3.Interceptor
 import okhttp3.Response

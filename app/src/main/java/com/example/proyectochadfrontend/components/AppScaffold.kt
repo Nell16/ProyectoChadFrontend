@@ -32,7 +32,7 @@ fun AppScaffold(
                 .padding(padding)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.pantallabackground),
+                    painter = painterResource(id = R.drawable.pruebabackground),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

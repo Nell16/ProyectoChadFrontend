@@ -1,4 +1,4 @@
-package com.example.proyectochadfrontend.data
+package com.example.proyectochadfrontend.model
 
 import okhttp3.MultipartBody
 import retrofit2.Response
@@ -11,6 +11,13 @@ interface ApiService {
     suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
 
     // --- USUARIOS ---
+
+    @POST("api/usuarios/registro")
+    suspend fun registrarUsuario(
+        @Body usuario: UsuarioRequest
+    ): Response<UsuarioDTO>
+
+
     @GET("api/usuarios/por-rol")
     suspend fun getTecnicos(
         @Query("rol") rol: String = "TECNICO"
@@ -28,6 +35,10 @@ interface ApiService {
     suspend fun getReparacionesPorUsuario(
         @Path("usuarioId") usuarioId: Long
     ): Response<List<ReparacionResponse>>
+
+    @GET("api/reparaciones")
+    suspend fun obtenerTodasLasReparaciones(): Response<List<ReparacionResponse>>
+
 
     // --- REPARACIONES (Técnicos) ---
     @GET("api/reparaciones/tecnico/{tecnicoId}")
@@ -76,9 +87,9 @@ interface ApiService {
     suspend fun getTodosLosComponentes(): Response<List<ComponenteDTO>>
 
     @POST("api/componentes")
-    suspend fun crearComponente(
-        @Body componente: ComponenteDTO
-    ): Response<ComponenteDTO>
+    suspend fun agregarComponente(
+        @Body componente: ComponenteRequestDTO
+    ): Response<Void>
 
     @PUT("api/componentes/{id}/general")
     suspend fun actualizarComponenteGeneral(
@@ -93,6 +104,13 @@ interface ApiService {
 
     @POST("api/componentes/generales")
     suspend fun crearComponenteGeneral(@Body componente: ComponenteGeneralDTO): Response<ComponenteDTO>
+
+    @POST("api/componentes/asignar-general")
+    suspend fun asignarComponenteGeneralAReparacion(
+        @Query("componenteId") componenteId: Long,
+        @Query("reparacionId") reparacionId: Long
+    ): Response<ComponenteDTO>
+
 
     // --- SERVICIOS ---
     @GET("api/servicios")
@@ -124,6 +142,13 @@ interface ApiService {
         @Path("id") id: Long,
         @Body usuario: UsuarioDTO
     ): Response<UsuarioDTO>
+
+    @PUT("api/usuarios/{id}/rol")
+    suspend fun actualizarRolUsuario(
+        @Path("id") id: Long,
+        @Query("nuevoRol") nuevoRol: String
+    ): Response<UsuarioDTO>
+
 
 
     // NOTA: Agrega aquí futuras funciones según avance el proyecto.

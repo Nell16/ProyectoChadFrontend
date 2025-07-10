@@ -1,12 +1,30 @@
 package com.example.proyectochadfrontend.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.proyectochadfrontend.data.ReparacionResponse
-import com.example.proyectochadfrontend.data.RetrofitClient
+import androidx.compose.ui.unit.sp
+import com.example.proyectochadfrontend.R
+import com.example.proyectochadfrontend.components.AppScaffold
+import com.example.proyectochadfrontend.model.ReparacionResponse
+import com.example.proyectochadfrontend.model.RetrofitClient
+import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,70 +62,146 @@ fun DetalleReparacionTecnicoScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    AppScaffold(
+        selectedItem = "",
+        onHomeClick = {},
+        onProfileClick = {},
+        onSettingsClick = {}
     ) {
-        Text("Detalle de Reparación", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(16.dp))
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(id = R.drawable.pantallabackground),
+                contentDescription = "Fondo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
 
-        if (error != null) {
-            Text("Error: $error", color = MaterialTheme.colorScheme.error)
-        } else if (reparacion != null) {
-            val rep = reparacion!!
-            Text("Equipo: ${rep.tipoEquipo}")
-            Text("Marca: ${rep.marca}")
-            Text("Modelo: ${rep.modelo}")
-            Text("Descripción: ${rep.descripcionFalla}")
-            Text("Estado: ${rep.estado}")
-            Text("Fecha Ingreso: ${rep.fechaIngreso}")
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text("Cliente: ${rep.usuario.primerNombre}")
-            Text("Correo: ${rep.usuario.correo}")
-
-            rep.diagnostico?.let { Text("Diagnóstico: $it") }
-            rep.solucion?.let { Text("Solución: $it") }
-            rep.costo?.let { Text("Costo: $it USD") }
-            rep.servicio?.let { Text("Servicio: ${it.nombre} - ${it.descripcion}") }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            if (rep.tecnico == null) {
-                Button(
-                    onClick = {
-                        scope.launch(Dispatchers.IO) {
-                            try {
-                                val response = api.autoasignarTecnico(reparacionId)
-                                if (response.isSuccessful) {
-                                    withContext(Dispatchers.Main) {
-                                        onTomarSolicitud()
-                                    }
-                                } else {
-                                    withContext(Dispatchers.Main) {
-                                        error = "No se pudo tomar la solicitud"
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    error = "Error: ${e.message}"
-                                }
-                            }
-                        }
-                    },
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Tomar esta Solicitud")
+                    IconButton(
+                        onClick = onVolver,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .background(color = cyberpunkPink, shape = CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.White
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        "Detalle de Reparación",
+                        color = cyberpunkCyan,
+                        fontFamily = Rajdhani,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AnimatedVisibility(visible = reparacion?.tecnico == null, enter = fadeIn()) {
+                    Button(
+                        onClick = {
+                            scope.launch(Dispatchers.IO) {
+                                try {
+                                    val response = api.autoasignarTecnico(reparacionId)
+                                    if (response.isSuccessful) {
+                                        withContext(Dispatchers.Main) {
+                                            onTomarSolicitud()
+                                        }
+                                    } else {
+                                        withContext(Dispatchers.Main) {
+                                            error = "No se pudo tomar la solicitud"
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        error = "Error: ${e.message}"
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = cyberpunkPink)
+                    ) {
+                        Text("Tomar esta Solicitud", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                error?.let {
+                    Text("Error: $it", color = cyberpunkYellow, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    reparacion?.let { rep ->
+                        CampoTexto1("Equipo", rep.tipoEquipo)
+                        CampoTexto1("Marca", rep.marca)
+                        CampoTexto1("Modelo", rep.modelo)
+                        CampoTexto1("Descripción", rep.descripcionFalla)
+                        CampoTexto1("Estado", rep.estado)
+                        CampoTexto1("Fecha Ingreso", rep.fechaIngreso)
+                        CampoTexto1("Cliente", rep.usuario.primerNombre)
+                        CampoTexto1("Correo", rep.usuario.correo)
+                        rep.diagnostico?.let { CampoTexto1("Diagnóstico", it) }
+                        rep.solucion?.let { CampoTexto1("Solución", it) }
+                        rep.costo?.let { CampoTexto1("Costo", "$it USD") }
+                        rep.servicio?.let { CampoTexto1("Servicio", "${it.nombre} - ${it.descripcion}") }
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        Button(onClick = onVolver, modifier = Modifier.fillMaxWidth()) {
-            Text("Volver")
         }
     }
 }
 
+@Composable
+fun CampoTexto1(label: String, valor: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "$label:",
+            color = cyberpunkYellow,
+            fontFamily = Rajdhani,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+        OutlinedTextField(
+            value = valor,
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = LocalTextStyle.current.copy(
+                color = Color.White,
+                fontFamily = Rajdhani,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = cyberpunkCyan,
+                focusedBorderColor = cyberpunkCyan,
+                cursorColor = Color.Transparent,
+                disabledTextColor = Color.White,
+                focusedLabelColor = cyberpunkCyan,
+                unfocusedLabelColor = cyberpunkCyan
+            )
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+    }
+}

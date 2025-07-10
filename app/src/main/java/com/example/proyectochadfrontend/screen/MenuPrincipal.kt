@@ -1,10 +1,9 @@
 package com.example.proyectochadfrontend.screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.components.AppScaffold
-import com.example.proyectochadfrontend.data.LoginResponse
+import com.example.proyectochadfrontend.model.LoginResponse
 import com.example.proyectochadfrontend.ui.theme.*
 
 @Composable
@@ -31,7 +30,7 @@ fun MenuPrincipalScreen(
     onProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onGestionUsuarios: () -> Unit = {},
-    ) {
+) {
     AppScaffold(
         selectedItem = "home",
         onHomeClick = {},
@@ -39,85 +38,95 @@ fun MenuPrincipalScreen(
         onSettingsClick = onSettingsClick
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 24.dp)
+                .padding(16.dp)
         ) {
             Text(
                 text = "MENÚ PRINCIPAL",
                 color = cyberpunkCyan,
                 fontFamily = Rajdhani,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold
+                fontSize = 30.sp,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = user.correo,
-                color = cyberpunkPink,
-                fontFamily = Rajdhani,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "Rol: ${user.rol.uppercase()}",
-                color = cyberpunkYellow,
-                fontFamily = Rajdhani,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            when (user.rol.uppercase()) {
-                "CLIENTE" -> {
-                    CyberButton("Mis Reparaciones", onNavigateToReparaciones)
-                    CyberButton("Solicitud - Nueva Reparación", onCrearReparacion)
-                }
-
-                "TECNICO" -> {
-                    CyberButton("Reparaciones Asignadas", onNavigateToReparaciones)
-                    CyberButton("Solicitudes Disponibles", onSolicitudesDisponibles)
-                    CyberButton("Diagnosticar Reparación", onDiagnosticar)
-                }
-
-                "ADMIN" -> {
-                    CyberButton("Todas las Reparaciones", onNavigateToReparaciones)
-                    CyberButton("Solicitudes Disponibles", onAsignarTecnico)
-                    CyberButton("Gestionar Servicios", onGestionServicios)
-                    CyberButton("Gestionar Componentes", onGestionComponentes)
-                    CyberButton("Gestionar Usuarios", onGestionUsuarios)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                colors = CardDefaults.cardColors(containerColor = cyberpunkDarkGray)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Bienvenido, ${user.primerNombre} ${user.primerApellido}",
+                        color = cyberpunkYellow,
+                        fontFamily = Rajdhani,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = user.correo,
+                        color = cyberpunkPink,
+                        fontFamily = Rajdhani,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Rol: ${user.rol.uppercase()}",
+                        color = cyberpunkCyan,
+                        fontFamily = Rajdhani,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            IconButton(
-                onClick = onLogout,
-                modifier = Modifier
-                    .size(60.dp)
-                    .background(color = cyberpunkPink, shape = CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ExitToApp,
-                    contentDescription = "Cerrar sesión",
-                    tint = Color.White
+            val botones = when (user.rol.uppercase()) {
+                "CLIENTE" -> listOf(
+                    "Mis Reparaciones" to onNavigateToReparaciones,
+                    "Solicitud - Nueva Reparación" to onCrearReparacion
                 )
+                "TECNICO" -> listOf(
+                    "Reparaciones Asignadas" to onNavigateToReparaciones,
+                    "Solicitudes Disponibles" to onSolicitudesDisponibles
+                )
+                "ADMIN" -> listOf(
+                    "Gestionar Reparaciones" to onNavigateToReparaciones,
+                    "Solicitudes Disponibles" to onAsignarTecnico,
+                    "Gestionar Servicios" to onGestionServicios,
+                    "Gestionar Componentes" to onGestionComponentes,
+                    "Gestionar Usuarios" to onGestionUsuarios
+                )
+                else -> emptyList()
+            }
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(botones) { (texto, accion) ->
+                    CyberGridButton(text = texto, onClick = accion)
+                }
             }
         }
     }
 }
 
 @Composable
-fun CyberButton(text: String, onClick: () -> Unit) {
+fun CyberGridButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .height(100.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = cyberpunkCyan,
             contentColor = Color.Black
@@ -132,4 +141,3 @@ fun CyberButton(text: String, onClick: () -> Unit) {
         )
     }
 }
-

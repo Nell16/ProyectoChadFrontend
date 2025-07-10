@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.proyectochadfrontend.R
-import com.example.proyectochadfrontend.data.*
+import com.example.proyectochadfrontend.model.*
 import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
@@ -72,8 +72,10 @@ fun GestionServiciosScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
+            Spacer(modifier = Modifier.height(32.dp))
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -102,7 +104,7 @@ fun GestionServiciosScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             mensaje?.let {
                 Text(it, color = cyberpunkYellow, fontFamily = Rajdhani)
@@ -145,7 +147,6 @@ fun GestionServiciosScreen(
                         scope.launch(Dispatchers.IO) {
                             try {
                                 val nuevo = ServicioRequest(nombre, descripcion, precio.toDouble())
-
                                 val response = if (servicioEnEdicionId != null) {
                                     api.actualizarServicio(servicioEnEdicionId!!, nuevo)
                                 } else {
@@ -158,7 +159,6 @@ fun GestionServiciosScreen(
                                             "Servicio actualizado correctamente"
                                         else
                                             "Servicio creado correctamente"
-
                                         nombre = ""
                                         descripcion = ""
                                         precio = ""
@@ -216,24 +216,9 @@ fun GestionServiciosScreen(
                         colors = CardDefaults.cardColors(containerColor = cyberpunkSurface)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                "Nombre: ${servicio.nombre}",
-                                color = Color.White,
-                                fontFamily = Rajdhani,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                "Descripción: ${servicio.descripcion}",
-                                color = Color.White,
-                                fontFamily = Rajdhani,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                "Precio: ${servicio.precioBase}",
-                                color = cyberpunkYellow,
-                                fontFamily = Rajdhani,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("Nombre: ${servicio.nombre}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                            Text("Descripción: ${servicio.descripcion}", color = Color.White, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
+                            Text("Precio: ${servicio.precioBase}", color = cyberpunkYellow, fontFamily = Rajdhani, fontWeight = FontWeight.Bold)
 
                             Spacer(modifier = Modifier.height(8.dp))
 

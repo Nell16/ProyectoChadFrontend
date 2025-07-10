@@ -19,8 +19,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.R
-import com.example.proyectochadfrontend.model.*
 import com.example.proyectochadfrontend.components.AppScaffold
+import com.example.proyectochadfrontend.model.ComponenteDTO
+import com.example.proyectochadfrontend.model.ComponenteRequestDTO
+import com.example.proyectochadfrontend.model.RetrofitClient
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,7 +30,7 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AsignarServicioScreen(
+fun AsignarComponentesScreen(
     reparacionId: Long,
     token: String,
     onBack: () -> Unit,
@@ -41,21 +43,20 @@ fun AsignarServicioScreen(
     val context = LocalContext.current
     val api = RetrofitClient.getClient(token)
 
-    var servicios by remember { mutableStateOf<List<ServicioDTO>>(emptyList()) }
-    var servicioSeleccionado by remember { mutableStateOf<ServicioDTO?>(null) }
+    var componentesDisponibles by remember { mutableStateOf(listOf<ComponenteDTO>()) }
+    var componenteSeleccionado by remember { mutableStateOf<ComponenteDTO?>(null) }
     var expanded by remember { mutableStateOf(false) }
     var exitoAsignacion by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        scope.launch(Dispatchers.IO) {
-            try {
-                val response = api.getServicios()
-                if (response.isSuccessful) {
-                    servicios = response.body() ?: emptyList()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Error al cargar servicios", Toast.LENGTH_SHORT).show()
+    // Cargar componentes
+    LaunchedEffect(true) {
+        try {
+            val response = api.getTodosLosComponentes()
+            if (response.isSuccessful) {
+                componentesDisponibles = response.body() ?: emptyList()
             }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error al cargar componentes", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -101,7 +102,7 @@ fun AsignarServicioScreen(
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
-                        text = "Asignar Servicio",
+                        text = "Asignar Componente",
                         fontSize = 24.sp,
                         color = cyberpunkCyan
                     )
@@ -114,10 +115,10 @@ fun AsignarServicioScreen(
                     onExpandedChange = { expanded = !expanded }
                 ) {
                     TextField(
-                        value = servicioSeleccionado?.nombre ?: "",
+                        value = componenteSeleccionado?.nombre ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Selecciona un servicio") },
+                        label = { Text("Selecciona un componente") },
                         modifier = Modifier
                             .menuAnchor()
                             .fillMaxWidth()
@@ -127,11 +128,11 @@ fun AsignarServicioScreen(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        servicios.forEach { servicio ->
+                        componentesDisponibles.forEach { componente ->
                             DropdownMenuItem(
-                                text = { Text(servicio.nombre) },
+                                text = { Text(componente.nombre) },
                                 onClick = {
-                                    servicioSeleccionado = servicio
+                                    componenteSeleccionado = componente
                                     expanded = false
                                 }
                             )
@@ -143,12 +144,18 @@ fun AsignarServicioScreen(
 
                 Button(
                     onClick = {
-                        val selected = servicioSeleccionado
-                        if (selected != null) {
+                        val componente = componenteSeleccionado
+                        if (componente != null) {
                             scope.launch(Dispatchers.IO) {
                                 try {
-                                    val dto = AsignarServicioDTO(servicioId = selected.id)
-                                    val response = api.asignarServicio(reparacionId, dto)
+                                    val request = ComponenteRequestDTO(
+                                        nombre = componente.nombre,
+                                        descripcion = componente.descripcion,
+                                        precio = componente.precio,
+                                        cantidad = componente.cantidad,
+                                        reparacionId = reparacionId
+                                    )
+                                    val response = api.agregarComponente(request)
                                     if (response.isSuccessful) {
                                         withContext(Dispatchers.Main) {
                                             exitoAsignacion = true
@@ -165,16 +172,16 @@ fun AsignarServicioScreen(
                                 }
                             }
                         } else {
-                            Toast.makeText(context, "Selecciona un servicio", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Selecciona un componente", Toast.LENGTH_SHORT).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = cyberpunkCyan)
                 ) {
-                    Text("Asignar Servicio", color = Color.Black)
+                    Text("Asignar Componente", color = Color.Black)
                 }
 
-
+                // Ventana emergente de éxito
                 if (exitoAsignacion) {
                     AlertDialog(
                         onDismissRequest = {
@@ -203,17 +210,17 @@ fun AsignarServicioScreen(
                             )
                         },
                         title = {
-                            Text("¡Servicio asignado correctamente!", color = cyberpunkCyan)
+                            Text("¡Asignado correctamente!", color = cyberpunkCyan)
                         },
                         text = {
-                            Text("El servicio fue agregado a la reparación.")
+                            Text("El componente fue agregado a la reparación.")
                         },
                         containerColor = Color(0xFF1A1A1A),
                         titleContentColor = Color.White,
                         textContentColor = Color.White
                     )
-
                 }
+
             }
         }
     }

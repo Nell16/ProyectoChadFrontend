@@ -1,7 +1,6 @@
-package com.example.proyectochadfrontend.data
+package com.example.proyectochadfrontend.model
 
-data class ComponenteDTO(
-    val id: Long,
+data class ComponenteGeneralDTO(
     val nombre: String,
     val descripcion: String,
     val precio: Double,
