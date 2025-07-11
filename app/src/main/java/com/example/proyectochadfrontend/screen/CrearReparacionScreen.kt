@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.components.AppScaffold
 import com.example.proyectochadfrontend.model.ReparacionRequest
-import com.example.proyectochadfrontend.model.RetrofitClient
+import com.example.proyectochadfrontend.network.RetrofitClient
 import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
 import com.example.proyectochadfrontend.ui.components.CyberpunkButton
 import com.example.proyectochadfrontend.ui.theme.*

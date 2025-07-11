@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.model.*
 import com.example.proyectochadfrontend.components.AppScaffold
+import com.example.proyectochadfrontend.network.RetrofitClient
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

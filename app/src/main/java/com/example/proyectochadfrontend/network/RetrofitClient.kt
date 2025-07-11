@@ -1,4 +1,4 @@
-package com.example.proyectochadfrontend.model
+package com.example.proyectochadfrontend.network
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -33,5 +33,14 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
+    }
+
+    fun getClientSinToken(): ApiService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8080/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        return retrofit.create(ApiService::class.java)
     }
 }

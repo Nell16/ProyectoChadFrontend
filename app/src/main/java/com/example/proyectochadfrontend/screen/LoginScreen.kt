@@ -20,6 +20,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.proyectochadfrontend.model.*
+import com.example.proyectochadfrontend.network.RetrofitClient
 import com.example.proyectochadfrontend.ui.components.*
 import com.example.proyectochadfrontend.ui.theme.ProyectoChadFrontendTheme
 import com.example.proyectochadfrontend.util.UserPreferences

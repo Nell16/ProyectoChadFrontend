@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.proyectochadfrontend.components.AppScaffold
 import com.example.proyectochadfrontend.model.ReparacionResponse
-import com.example.proyectochadfrontend.model.RetrofitClient
+import com.example.proyectochadfrontend.network.RetrofitClient
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

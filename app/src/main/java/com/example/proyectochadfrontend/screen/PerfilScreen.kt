@@ -25,7 +25,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.components.AppScaffold
 import com.example.proyectochadfrontend.model.LoginResponse
-import com.example.proyectochadfrontend.model.RetrofitClient
+import com.example.proyectochadfrontend.network.RetrofitClient
 import com.example.proyectochadfrontend.model.UsuarioDTO
 import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
 import com.example.proyectochadfrontend.ui.theme.*

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.example.proyectochadfrontend.R
 import com.example.proyectochadfrontend.components.AppScaffold
 import com.example.proyectochadfrontend.model.*
+import com.example.proyectochadfrontend.network.RetrofitClient
 import com.example.proyectochadfrontend.ui.components.CyberpunkTextField
 import com.example.proyectochadfrontend.ui.theme.*
 import kotlinx.coroutines.Dispatchers

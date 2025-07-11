@@ -1,5 +1,18 @@
-package com.example.proyectochadfrontend.model
+package com.example.proyectochadfrontend.network
 
+import com.example.proyectochadfrontend.model.AsignarServicioDTO
+import com.example.proyectochadfrontend.model.ComponenteDTO
+import com.example.proyectochadfrontend.model.ComponenteGeneralDTO
+import com.example.proyectochadfrontend.model.ComponenteRequestDTO
+import com.example.proyectochadfrontend.model.LoginRequest
+import com.example.proyectochadfrontend.model.LoginResponse
+import com.example.proyectochadfrontend.model.ReparacionDiagnosticoRequest
+import com.example.proyectochadfrontend.model.ReparacionRequest
+import com.example.proyectochadfrontend.model.ReparacionResponse
+import com.example.proyectochadfrontend.model.ServicioDTO
+import com.example.proyectochadfrontend.model.ServicioRequest
+import com.example.proyectochadfrontend.model.UsuarioDTO
+import com.example.proyectochadfrontend.model.UsuarioRequest
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
